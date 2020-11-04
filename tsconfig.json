@@ -1,9 +1,10 @@
 {
 	"extends": "tsconfig-collaborne",
 	"compilerOptions": {
-		"outDir": "dist"
+		"noEmit": true
 	},
 	"include": [
-		"src/**/*.ts"
+		"src/**/*.ts",
+		"test/**/*.ts"
 	]
 }

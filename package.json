@@ -3,8 +3,10 @@
   "version": "0.1.1",
   "description": "Wrapper to apply cgroup memory limits to a Node process",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "jest --passWithNoTests"
+    "build": "tsc -p tsconfig.dist.json",
+    "test:compile": "tsc -p tsconfig.json",
+    "test:unit": "jest --passWithNoTests",
+    "test": "npm run test:compile && npm run test:unit"
   },
   "bin": "dist/cli.js",
   "repository": {
