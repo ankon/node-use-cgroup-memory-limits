@@ -15,9 +15,9 @@ function readLimitValue(path: string, maxValue: number = -1): number {
 	return -1;
 }
 
-function createGetMemoryLimitsCgroups(mountPoint: string): GetMemoryLimits {
+function createGetMemoryLimitsCgroups(memoryControllerMountPoint: string): GetMemoryLimits {
 	return () => {
-		return readLimitValue(`${mountPoint}/memory/memory.limit_in_bytes`);
+		return readLimitValue(`${memoryControllerMountPoint}/memory.limit_in_bytes`);
 	};
 }
 
@@ -51,9 +51,8 @@ export function findExtraNodeOptions() {
 	const mountInfo = procfs.processMountinfo();
 
 	let getMemoryLimits: GetMemoryLimits | undefined;
-	// Find a cgroup mount point
-	// XXX: Cgroup v1 seems to be outdated ...
-	const cgroup1MountInfo = mountInfo.find(({ type }) => type === 'cgroup');
+	// Find the cgroup mount point for the 'memory' controller
+	const cgroup1MountInfo = mountInfo.find(({ type, superOptions }) => type === 'cgroup' && superOptions.includes('memory'));
 	// XXX: This might need to also look into the /proc/self/cgroup file to find the mount point
 	const cgroup2MountInfo = mountInfo.find(({ type }) => type === 'cgroup2');
 	if (cgroup1MountInfo) {
