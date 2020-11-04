@@ -1,6 +1,6 @@
 {
   "name": "@collaborne/use-cgroup-memory-limits",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Wrapper to apply cgroup memory limits to a Node process",
   "scripts": {
     "build": "tsc -p tsconfig.dist.json",
