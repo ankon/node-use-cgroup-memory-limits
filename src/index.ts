@@ -15,8 +15,7 @@ interface MountInfo {
 
 function readMountInfo(): MountInfo[] {
 	try {
-		// Parsing based on Hotspot, see
-		// https://github.com/openjdk/jdk/blob/master/src/hotspot/os/linux/cgroupSubsystem_linux.cpp
+		// See https://man7.org/linux/man-pages/man5/proc.5.html for a description of the fields
 		const mountInfoContents = readFileSync('/proc/self/mountinfo', 'utf8');
 		return mountInfoContents
 			.split(/\n/)
@@ -95,6 +94,9 @@ function createGetMemoryLimitsCgroupsV2(mountPoint: string): GetMemoryLimits {
 }
 
 function findExtraNodeOptions() {
+	// Note that this is very much inspired by the logic used in Hotspot, see
+	// https://github.com/openjdk/jdk/blob/master/src/hotspot/os/linux/cgroupSubsystem_linux.cpp
+	// and related sources for more details on what could be done.
 	const mountInfo = readMountInfo();
 
 	let getMemoryLimits: GetMemoryLimits | undefined;
