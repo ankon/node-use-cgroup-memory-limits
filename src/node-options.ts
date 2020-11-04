@@ -1,52 +1,6 @@
 import { readFileSync } from 'fs';
 
-interface MountInfo {
-	mountId: string;
-	parentId: string;
-	majorMinor: string;
-	mountRoot: string;
-	mountPoint: string;
-	flags: string[];
-	type: string;
-}
-
-function readMountInfo(): MountInfo[] {
-	try {
-		// See https://man7.org/linux/man-pages/man5/proc.5.html for a description of the fields
-		const mountInfoContents = readFileSync('/proc/self/mountinfo', 'utf8');
-		return mountInfoContents
-			.split(/\n/)
-			.filter(mountInfoLine => mountInfoLine.trim().length > 0)
-			.map(mountInfoLine => {
-				// "1503 1494 0:27 / /sys/fs/cgroup ro,nosuid,nodev,noexec,relatime - cgroup2 cgroup2 rw,seclabel,nsdelegate"
-				const [
-					mountId,
-					parentId,
-					majorMinor,
-					mountRoot,
-					mountPoint,
-					flags,
-					/* Ignored */,
-					type,
-					/* Ignored */,
-					/* Ignored */,
-				] = mountInfoLine.split(/ /);
-				return {
-					mountId,
-					parentId,
-					majorMinor,
-					mountRoot,
-					mountPoint,
-					flags: flags.split(/,/),
-					type,
-				};
-			});
-	} catch (err) {
-		// This should be fine, just indicating an unsupported operating system (or a bug in parsing ...)
-		console.debug(`Cannot read mount info: ${err.message}`);
-		return [];
-	}
-}
+import { procfs } from '@stroncium/procfs';
 
 type GetMemoryLimits = () => number;
 
@@ -94,7 +48,7 @@ export function findExtraNodeOptions() {
 	// Note that this is very much inspired by the logic used in Hotspot, see
 	// https://github.com/openjdk/jdk/blob/master/src/hotspot/os/linux/cgroupSubsystem_linux.cpp
 	// and related sources for more details on what could be done.
-	const mountInfo = readMountInfo();
+	const mountInfo = procfs.processMountinfo();
 
 	let getMemoryLimits: GetMemoryLimits | undefined;
 	// Find a cgroup mount point

@@ -35,6 +35,9 @@
     "LICENSE",
     "README.md"
   ],
+  "dependencies": {
+    "@stroncium/procfs": "^1.2.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
