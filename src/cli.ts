@@ -3,10 +3,7 @@
 import { spawn } from 'child_process';
 
 import { findExtraNodeOptions } from './node-options';
-
-function isMaxOldSpaceSizeOption(option: string) {
-	return /^--max-old-space-size(=\d+)?/.test(option);
-}
+import { isMaxOldSpaceSizeOption } from './utils';
 
 const env = process.env;
 const nodeOptions = env.NODE_OPTIONS ?? '';
