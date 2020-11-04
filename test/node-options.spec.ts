@@ -11,7 +11,7 @@ patchRequire(fs);
 const { readFileSync } = fs;
 
 function runFindExtraNodeOptions(contents: DirectoryJSON) {
-	// XXX: Will this now configure the 'fs'?
+	// Configure the mocked file system
 	vol.fromJSON(contents, '/');
 	return findExtraNodeOptions();
 }
