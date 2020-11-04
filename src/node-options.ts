@@ -44,7 +44,7 @@ function createGetMemoryLimitsCgroupsV2(mountPoint: string): GetMemoryLimits {
 	};
 }
 
-export function findExtraNodeOptions() {
+export function findExtraNodeOptions(): string[] {
 	// Note that this is very much inspired by the logic used in Hotspot, see
 	// https://github.com/openjdk/jdk/blob/master/src/hotspot/os/linux/cgroupSubsystem_linux.cpp
 	// and related sources for more details on what could be done.
@@ -67,8 +67,8 @@ export function findExtraNodeOptions() {
 		const limitInBytes = getMemoryLimits();
 		if (limitInBytes > 0) {
 			console.debug(`Applying cgroup memory limit: ${limitInBytes}`);
-			return `--max-old-space-size=${limitInBytes / 1048576}`;
+			return [`--max-old-space-size=${limitInBytes / 1048576}`];
 		}
 	}
-	return '';
+	return [];
 }

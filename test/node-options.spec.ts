@@ -25,7 +25,7 @@ describe('node-options', () => {
 				'/sys/fs/cgroup/memory/memory.limit_in_bytes': '314572800\n',
 			};
 			const extraOptions = runFindExtraNodeOptions(cgroupsFS);
-			expect(extraOptions).toEqual('--max-old-space-size=300');
+			expect(extraOptions).toEqual(['--max-old-space-size=300']);
 		});
 	});
 
@@ -38,7 +38,7 @@ describe('node-options', () => {
 				'/sys/fs/cgroup/memory.swap.max': '314572800\n',
 			};
 			const extraOptions = runFindExtraNodeOptions(cgroupsV2FS);
-			expect(extraOptions).toEqual('--max-old-space-size=600');
+			expect(extraOptions).toEqual(['--max-old-space-size=600']);
 		});
 	});
 });
