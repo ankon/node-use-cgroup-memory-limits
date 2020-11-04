@@ -1,0 +1,40 @@
+1146 875 0:171 / / rw,relatime master:157 - overlay overlay rw,lowerdir=/var/lib/docker/overlay2/l/GATEKY66MB6NU5IDUYDH5KLGID:/var/lib/docker/overlay2/l/SALDFUBSFSAXOKBGAAJL2GD5FN:/var/lib/docker/overlay2/l/MNMZ4LBEXGJRKY6BYNDXLLQGH4:/var/lib/docker/overlay2/l/EM24ADBE46MEHPQUV4ZUDIDTMF:/var/lib/docker/overlay2/l/3MJZABBRFNQUX6XYASF6BD3PG5:/var/lib/docker/overlay2/l/Q75ZSDFPA4BMNWTLQE52GSAH6X:/var/lib/docker/overlay2/l/7WRKTIGO5M2MKZBKPGYE7VPSBX:/var/lib/docker/overlay2/l/LJR4TMG7MLRPROW5ZNLE77PK5C:/var/lib/docker/overlay2/l/D56ADBVYQDPKWRGA53QEUDFF5V:/var/lib/docker/overlay2/l/YGJR763XBCHM7DA2PWODUG5E2Z,upperdir=/var/lib/docker/overlay2/ac2773f1aca752e7db68bfc73fd05bf86058dd78b374e918733a26a04e275fee/diff,workdir=/var/lib/docker/overlay2/ac2773f1aca752e7db68bfc73fd05bf86058dd78b374e918733a26a04e275fee/work
+1147 1146 0:172 / /proc rw,nosuid,nodev,noexec,relatime - proc proc rw
+1148 1146 0:173 / /dev rw,nosuid - tmpfs tmpfs rw,size=65536k,mode=755
+1149 1148 0:174 / /dev/pts rw,nosuid,noexec,relatime - devpts devpts rw,gid=5,mode=620,ptmxmode=666
+1150 1146 0:166 / /sys ro,nosuid,nodev,noexec,relatime - sysfs sysfs ro
+1151 1150 0:175 / /sys/fs/cgroup ro,nosuid,nodev,noexec,relatime - tmpfs tmpfs rw,mode=755
+1152 1151 0:23 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/systemd ro,nosuid,nodev,noexec,relatime master:9 - cgroup cgroup rw,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd
+1153 1151 0:25 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/net_cls,net_prio ro,nosuid,nodev,noexec,relatime master:10 - cgroup cgroup rw,net_cls,net_prio
+1154 1151 0:26 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/freezer ro,nosuid,nodev,noexec,relatime master:11 - cgroup cgroup rw,freezer
+1155 1151 0:27 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/cpu,cpuacct ro,nosuid,nodev,noexec,relatime master:12 - cgroup cgroup rw,cpu,cpuacct
+1156 1151 0:28 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/perf_event ro,nosuid,nodev,noexec,relatime master:13 - cgroup cgroup rw,perf_event
+1157 1151 0:29 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/devices ro,nosuid,nodev,noexec,relatime master:14 - cgroup cgroup rw,devices
+1158 1151 0:30 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/hugetlb ro,nosuid,nodev,noexec,relatime master:15 - cgroup cgroup rw,hugetlb
+1159 1151 0:31 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/cpuset ro,nosuid,nodev,noexec,relatime master:16 - cgroup cgroup rw,cpuset
+1160 1151 0:32 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/pids ro,nosuid,nodev,noexec,relatime master:17 - cgroup cgroup rw,pids
+1161 1151 0:33 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/blkio ro,nosuid,nodev,noexec,relatime master:18 - cgroup cgroup rw,blkio
+1162 1151 0:34 /kubepods/burstable/pode3339b2f-6c16-4d54-95f1-ea157f35cda3/76f4eacf047145bb7e20e728115ef5ea335c3b587051d5fc41ee91c4bff142f4 /sys/fs/cgroup/memory ro,nosuid,nodev,noexec,relatime master:19 - cgroup cgroup rw,memory
+1163 1148 0:155 / /dev/mqueue rw,nosuid,nodev,noexec,relatime - mqueue mqueue rw
+1164 1146 259:1 /var/lib/kubelet/pods/e3339b2f-6c16-4d54-95f1-ea157f35cda3/volumes/kubernetes.io~configmap/aws-ca /aws-ca ro,noatime - xfs /dev/nvme0n1p1 rw,attr2,inode64,noquota
+1175 1146 259:1 /var/lib/kubelet/pods/e3339b2f-6c16-4d54-95f1-ea157f35cda3/volumes/kubernetes.io~configmap/config /config ro,noatime - xfs /dev/nvme0n1p1 rw,attr2,inode64,noquota
+1176 1146 0:143 / /secrets ro,relatime - tmpfs tmpfs rw
+1177 1146 259:1 /var/lib/kubelet/pods/e3339b2f-6c16-4d54-95f1-ea157f35cda3/volumes/kubernetes.io~empty-dir/log /log rw,noatime - xfs /dev/nvme0n1p1 rw,attr2,inode64,noquota
+1178 1148 259:1 /var/lib/kubelet/pods/e3339b2f-6c16-4d54-95f1-ea157f35cda3/containers/polaris-token-service/4f3b3867 /dev/termination-log rw,noatime - xfs /dev/nvme0n1p1 rw,attr2,inode64,noquota
+1233 1146 259:1 /var/lib/docker/containers/7d6e974add5679b9f5a96dbfdfdbb1c376482b4309d550c6f01ce15086584765/resolv.conf /etc/resolv.conf rw,noatime - xfs /dev/nvme0n1p1 rw,attr2,inode64,noquota
+1234 1146 259:1 /var/lib/docker/containers/7d6e974add5679b9f5a96dbfdfdbb1c376482b4309d550c6f01ce15086584765/hostname /etc/hostname rw,noatime - xfs /dev/nvme0n1p1 rw,attr2,inode64,noquota
+1235 1146 259:1 /var/lib/kubelet/pods/e3339b2f-6c16-4d54-95f1-ea157f35cda3/etc-hosts /etc/hosts rw,noatime - xfs /dev/nvme0n1p1 rw,attr2,inode64,noquota
+1236 1148 0:153 / /dev/shm rw,nosuid,nodev,noexec,relatime - tmpfs shm rw,size=65536k
+1237 1146 0:142 / /run/secrets/kubernetes.io/serviceaccount ro,relatime - tmpfs tmpfs rw
+876 1147 0:172 /bus /proc/bus ro,relatime - proc proc rw
+877 1147 0:172 /fs /proc/fs ro,relatime - proc proc rw
+887 1147 0:172 /irq /proc/irq ro,relatime - proc proc rw
+888 1147 0:172 /sys /proc/sys ro,relatime - proc proc rw
+889 1147 0:172 /sysrq-trigger /proc/sysrq-trigger ro,relatime - proc proc rw
+890 1147 0:182 / /proc/acpi ro,relatime - tmpfs tmpfs ro
+891 1147 0:173 /null /proc/kcore rw,nosuid - tmpfs tmpfs rw,size=65536k,mode=755
+892 1147 0:173 /null /proc/keys rw,nosuid - tmpfs tmpfs rw,size=65536k,mode=755
+893 1147 0:173 /null /proc/latency_stats rw,nosuid - tmpfs tmpfs rw,size=65536k,mode=755
+894 1147 0:173 /null /proc/timer_list rw,nosuid - tmpfs tmpfs rw,size=65536k,mode=755
+895 1147 0:173 /null /proc/sched_debug rw,nosuid - tmpfs tmpfs rw,size=65536k,mode=755
+896 1150 0:183 / /sys/firmware ro,relatime - tmpfs tmpfs ro
