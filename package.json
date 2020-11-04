@@ -2,12 +2,11 @@
   "name": "@collaborne/use-cgroup-memory-limits",
   "version": "0.1.0",
   "description": "Wrapper to apply cgroup memory limits to a Node process",
-  "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "jest --passWithNoTests"
   },
-  "bin": "dist/index.js",
+  "bin": "dist/cli.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Collaborne/node-use-cgroup-memory-limits.git"
