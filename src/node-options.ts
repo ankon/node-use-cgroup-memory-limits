@@ -69,7 +69,7 @@ export function findExtraNodeOptions(): string[] {
 		const limitInBytes = getMemoryLimits();
 		if (limitInBytes > 0) {
 			console.debug(`Applying cgroup memory limit: ${limitInBytes}`);
-			return [`--max-old-space-size=${limitInBytes / 1048576}`];
+			return [`--max-old-space-size=${Math.floor(limitInBytes / 1048576)}`];
 		}
 	}
 	return [];
