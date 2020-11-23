@@ -1,7 +1,7 @@
 import { patchRequire } from 'fs-monkey';
 import { DirectoryJSON, vol } from 'memfs';
 
-import { findExtraNodeOptions, processOwnOptions, GetMemoryLimits, getSpawnOptions, OwnOptions } from '../src/node-options';
+import { findExtraNodeOptions, processOwnOptions, GetMemoryLimits, getSpawnOptions, OwnOptions, DEFAULT_OPTIONS } from '../src/node-options';
 
 // Mock 'fs', EXCEPT for require() calls.
 jest.mock('fs', () => require('memfs').fs);
@@ -25,7 +25,7 @@ describe('node-options', () => {
 					'/proc/self/cgroup': readFileSync(`${__dirname}/${fixture}/cgroup`, 'utf8'),
 					'/sys/fs/cgroup/memory/memory.limit_in_bytes': '314572800\n',
 				};
-				const extraOptions = runFindExtraNodeOptions(cgroupsFS, { memoryFraction: 1 });
+				const extraOptions = runFindExtraNodeOptions(cgroupsFS, { memoryFraction: 1, memoryRegion: 'old-space' });
 				expect(extraOptions).toEqual(['--max-old-space-size=300']);
 			});
 		});
@@ -38,13 +38,13 @@ describe('node-options', () => {
 					'/sys/fs/cgroup/memory.max': '314572800\n',
 					'/sys/fs/cgroup/memory.swap.max': '314572800\n',
 				};
-				const extraOptions = runFindExtraNodeOptions(cgroupsV2FS, { memoryFraction: 1 });
+				const extraOptions = runFindExtraNodeOptions(cgroupsV2FS, { memoryFraction: 1, memoryRegion: 'old-space' });
 				expect(extraOptions).toEqual(['--max-old-space-size=600']);
 			});
 		});
 
 		it('applies cgroup memory fraction', () => {
-			const extraOptions = runFindExtraNodeOptions({}, { memoryFraction: 0.5 }, () => 600 * 1048576);
+			const extraOptions = runFindExtraNodeOptions({}, { memoryFraction: 0.5, memoryRegion: 'old-space' }, () => 600 * 1048576);
 			expect(extraOptions).toEqual(['--max-old-space-size=300']);
 
 		});
@@ -79,15 +79,14 @@ describe('node-options', () => {
 			expect(returnedArgv).toEqual(argv.slice(1));
 		});
 
-		describe('cgroup memory fraction', () => {
+		describe('memory fraction', () => {
 			it('returns default', () => {
-				const defaultValue = 0.7;
-				const { memoryFraction } = processOwnOptions({}, [], { memoryFraction: defaultValue });
-				expect(memoryFraction).toEqual(defaultValue);
+				const { memoryFraction } = processOwnOptions({}, [], DEFAULT_OPTIONS);
+				expect(memoryFraction).toEqual(DEFAULT_OPTIONS.memoryFraction);
 			});
 			it('returns value from CGROUP_MEMORY_FRACTION environment variable', () => {
 				const envValue = 0.8;
-				const { memoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], { memoryFraction: 0.7 });
+				const { memoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], DEFAULT_OPTIONS);
 				expect(memoryFraction).toEqual(envValue);
 			});
 
@@ -108,8 +107,53 @@ describe('node-options', () => {
 				it(`uses fraction argument "${fractionArgv.join(' ')}" over environment variable`, () => {
 					const envValue = 0.8;
 					const argv = [...fractionArgv];
-					const { memoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, { memoryFraction: 0.7 });
+					const { memoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, DEFAULT_OPTIONS);
 					expect(memoryFraction).toEqual(argvValue);
+				});
+				it(`uses last fraction argument "${fractionArgv.join(' ')}"`, () => {
+					const argv = ['--cgroup-memory-fraction=1', ...fractionArgv];
+					const { memoryFraction } = processOwnOptions({}, argv, DEFAULT_OPTIONS);
+					expect(memoryFraction).toEqual(argvValue);
+				});
+			});
+		});
+		describe('memory region', () => {
+			it('returns default', () => {
+				const { memoryRegion } = processOwnOptions({}, [], DEFAULT_OPTIONS);
+				expect(memoryRegion).toEqual(DEFAULT_OPTIONS.memoryRegion);
+			});
+			['old-space', 'heap'].forEach(envValue => {
+				it('returns value from CGROUP_MEMORY_REGION environment variable', () => {
+					const { memoryRegion } = processOwnOptions({ CGROUP_MEMORY_REGION: envValue}, [], DEFAULT_OPTIONS);
+					expect(memoryRegion).toEqual(envValue);
+				});
+			});
+
+			['old-space', 'heap'].forEach(argvValue => {
+				[['--cgroup-memory-region', `${argvValue}`], [`--cgroup-memory-region=${argvValue}`]].forEach(regionArgv => {
+					it(`parses region argument "${regionArgv.join(' ')}"`, () => {
+						const otherArgv = ['alpha', 'beta', 'gamma'];
+						const argv = [...regionArgv, '--', ...otherArgv];
+						const { memoryRegion, argv: returnedArgv } = processOwnOptions({}, argv);
+						expect(memoryRegion).toEqual(argvValue);
+						expect(returnedArgv).toEqual(otherArgv);
+
+					});
+					it(`throws error for unexpected argument after fraction argument "${regionArgv.join(' ')}"`, () => {
+						const argv = [...regionArgv, 'unexpected thing'];
+						expect(() => processOwnOptions({}, argv)).toThrowError();
+					});
+					it(`uses region argument "${regionArgv.join(' ')}" over environment variable`, () => {
+						const envValue = 'env-value-is-invalid';
+						const argv = [...regionArgv];
+						const { memoryRegion } = processOwnOptions({ CGROUP_MEMORY_REGION: `${envValue}` }, argv, DEFAULT_OPTIONS);
+						expect(memoryRegion).toEqual(argvValue);
+					});
+					it(`uses last region argument "${regionArgv.join(' ')}"`, () => {
+						const argv = ['--cgroup-memory-region=initial-value-is-invalid', ...regionArgv];
+						const { memoryRegion } = processOwnOptions({}, argv, DEFAULT_OPTIONS);
+						expect(memoryRegion).toEqual(argvValue);
+					});
 				});
 			});
 		});

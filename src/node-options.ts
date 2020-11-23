@@ -7,10 +7,19 @@ import { isExplicitMemorySizeOption } from './utils';
 /** @visibleForTesting */
 export type GetMemoryLimits = () => number;
 
+type NodeJSMemoryRegion = 'old-space'|'heap';
+
 /** @visibleForTesting */
 export interface OwnOptions {
 	memoryFraction: number;
+	memoryRegion: NodeJSMemoryRegion;
 }
+
+/** @visibleForTesting */
+export const DEFAULT_OPTIONS: OwnOptions = {
+	memoryFraction: 0.7,
+	memoryRegion: 'old-space',
+};
 
 function readLimitValue(path: string, maxValue: number = -1): number {
 	try {
@@ -77,7 +86,7 @@ function selectGetMemoryLimits(): GetMemoryLimits | undefined {
 /**
  * @param getMemoryLimits for testing
  */
-export function findExtraNodeOptions({ memoryFraction }: OwnOptions, getMemoryLimits?: GetMemoryLimits): string[] {
+export function findExtraNodeOptions({ memoryFraction, memoryRegion }: OwnOptions, getMemoryLimits?: GetMemoryLimits): string[] {
 	if (!getMemoryLimits) {
 		getMemoryLimits = selectGetMemoryLimits();
 	}
@@ -86,25 +95,36 @@ export function findExtraNodeOptions({ memoryFraction }: OwnOptions, getMemoryLi
 		const limitInBytes = getMemoryLimits();
 		if (limitInBytes > 0) {
 			const limitInMiB = Math.floor(limitInBytes / 1048576 * memoryFraction);
-			console.debug(`Applying cgroup memory limit: ${limitInMiB}MiB`);
-			return [`--max-old-space-size=${limitInMiB}`];
+			console.debug(`Applying cgroup memory limit to memory region ${memoryRegion}: ${limitInMiB}MiB`);
+			return [`--max-${memoryRegion}-size=${limitInMiB}`];
 		}
 	}
 	return [];
 }
 
-export function processOwnOptions(env: typeof process.env, argv: typeof process.argv, { memoryFraction: defaultMemoryFraction }: OwnOptions = { memoryFraction: 0.7 }): OwnOptions & { argv: typeof process.argv } {
+export function processOwnOptions(env: typeof process.env, argv: typeof process.argv, defaultOptions: OwnOptions = DEFAULT_OPTIONS): OwnOptions & { argv: typeof process.argv } {
+	const result: OwnOptions = {
+		memoryFraction: Number(env.CGROUP_MEMORY_FRACTION) || defaultOptions.memoryFraction,
+		memoryRegion: (env.CGROUP_MEMORY_REGION || defaultOptions.memoryRegion) as NodeJSMemoryRegion,
+	};
 	let requireDashDash = false;
-	let memoryFraction = Number(env.CGROUP_MEMORY_FRACTION) || defaultMemoryFraction;
 	let spawnArgvIndex = 0;
 	for (; spawnArgvIndex < argv.length; spawnArgvIndex++) {
 		if (argv[spawnArgvIndex] === '--cgroup-memory-fraction') {
 			requireDashDash = true;
-			memoryFraction = Number(argv[++spawnArgvIndex]);
+			result.memoryFraction = Number(argv[++spawnArgvIndex]);
 			continue;
 		} else if (argv[spawnArgvIndex].startsWith('--cgroup-memory-fraction=')) {
 			requireDashDash = true;
-			memoryFraction = Number(argv[spawnArgvIndex].substring('--cgroup-memory-fraction='.length));
+			result.memoryFraction = Number(argv[spawnArgvIndex].substring('--cgroup-memory-fraction='.length));
+			continue;
+		} else if (argv[spawnArgvIndex] === '--cgroup-memory-region') {
+			requireDashDash = true;
+			result.memoryRegion = argv[++spawnArgvIndex] as NodeJSMemoryRegion;
+			continue;
+		} else if (argv[spawnArgvIndex].startsWith('--cgroup-memory-region=')) {
+			requireDashDash = true;
+			result.memoryRegion = argv[spawnArgvIndex].substring('--cgroup-memory-region='.length) as NodeJSMemoryRegion;
 			continue;
 		}
 
@@ -124,7 +144,7 @@ export function processOwnOptions(env: typeof process.env, argv: typeof process.
 	}
 
 	return {
-		memoryFraction,
+		...result,
 		argv: argv.slice(spawnArgvIndex),
 	};
 }
