@@ -4,7 +4,8 @@ import { procfs } from '@stroncium/procfs';
 
 import { isMaxOldSpaceSizeOption } from './utils';
 
-type GetMemoryLimits = () => number;
+/** @visibleForTesting */
+export type GetMemoryLimits = () => number;
 
 function readLimitValue(path: string, maxValue: number = -1): number {
 	try {
@@ -46,7 +47,7 @@ function createGetMemoryLimitsCgroupsV2(mountPoint: string): GetMemoryLimits {
 	};
 }
 
-export function findExtraNodeOptions(): string[] {
+function selectGetMemoryLimits(): GetMemoryLimits | undefined {
 	// Note that this is very much inspired by the logic used in Hotspot, see
 	// https://github.com/openjdk/jdk/blob/master/src/hotspot/os/linux/cgroupSubsystem_linux.cpp
 	// and related sources for more details on what could be done.
@@ -65,14 +66,62 @@ export function findExtraNodeOptions(): string[] {
 		getMemoryLimits = createGetMemoryLimitsCgroupsV2(cgroup2MountInfo.mountPoint);
 	}
 
+	return getMemoryLimits;
+}
+
+/**
+ * @param getMemoryLimits for testing
+ */
+export function findExtraNodeOptions(cgroupMemoryFraction: number, getMemoryLimits?: GetMemoryLimits): string[] {
+	if (!getMemoryLimits) {
+		getMemoryLimits = selectGetMemoryLimits();
+	}
+
 	if (getMemoryLimits) {
 		const limitInBytes = getMemoryLimits();
 		if (limitInBytes > 0) {
-			console.debug(`Applying cgroup memory limit: ${limitInBytes}`);
-			return [`--max-old-space-size=${Math.floor(limitInBytes / 1048576)}`];
+			const limitInMiB = Math.floor(limitInBytes / 1048576 * cgroupMemoryFraction);
+			console.debug(`Applying cgroup memory limit: ${limitInMiB}MiB`);
+			return [`--max-old-space-size=${limitInMiB}`];
 		}
 	}
 	return [];
+}
+
+export function getCgroupMemoryFraction(env: typeof process.env, argv: typeof process.argv, defaultCgroupMemoryFraction: number = 0.7): { cgroupMemoryFraction: number, argv: typeof process.argv } {
+	let requireDashDash = false;
+	let cgroupMemoryFraction = Number(env.CGROUP_MEMORY_FRACTION) || defaultCgroupMemoryFraction;
+	let spawnArgvIndex = 0;
+	for (; spawnArgvIndex < argv.length; spawnArgvIndex++) {
+		if (argv[spawnArgvIndex] === '--cgroup-memory-fraction') {
+			requireDashDash = true;
+			cgroupMemoryFraction = Number(argv[++spawnArgvIndex]);
+			continue;
+		} else if (argv[spawnArgvIndex].startsWith('--cgroup-memory-fraction=')) {
+			requireDashDash = true;
+			cgroupMemoryFraction = Number(argv[spawnArgvIndex].substring('--cgroup-memory-fraction='.length));
+			continue;
+		}
+
+		// Unknown for us, depending on whether we require a '--' this is either that, or
+		// we can stop.
+		if (argv[spawnArgvIndex] === '--') {
+			// Great, but we don't want to see this one in the spawn args.
+			spawnArgvIndex++;
+			break;
+		} else if (requireDashDash) {
+			// Bad: We need a '--', but this is not it.
+			throw new Error(`Cannot parse command-line, expected a '--' at position ${spawnArgvIndex}`);
+		} else {
+			// Also fine, we didn't expect a '--', and we didn't get one.
+			break;
+		}
+	}
+
+	return {
+		cgroupMemoryFraction,
+		argv: argv.slice(spawnArgvIndex),
+	};
 }
 
 /**
@@ -83,18 +132,19 @@ export function findExtraNodeOptions(): string[] {
  * @param getExtraNodeOptions For testing: function get extra node options
  */
 export function getSpawnOptions(env: typeof process.env, argv: typeof process.argv, getExtraNodeOptions = findExtraNodeOptions): { env: typeof process.env, argv: typeof process.argv } {
+	const { cgroupMemoryFraction, argv: spawnArgv } = getCgroupMemoryFraction(env, argv);
 	const nodeOptions = env.NODE_OPTIONS ?? '';
 	const hasExplicitMemoryLimitInNodeOptions = nodeOptions
 		.split(/\s/)
 		.some(isMaxOldSpaceSizeOption);
-	const hasExplicitMemoryLimitInArgv = argv
+	const hasExplicitMemoryLimitInArgv = spawnArgv
 		.some(isMaxOldSpaceSizeOption);
 	if (!hasExplicitMemoryLimitInNodeOptions && !hasExplicitMemoryLimitInArgv) {
-		const extraNodeOptions = getExtraNodeOptions();
+		const extraNodeOptions = getExtraNodeOptions(cgroupMemoryFraction);
 		// Put the arguments in the front, as the end will usually be options for whatever is running
 		// inside node.
-		argv.unshift(...extraNodeOptions);
+		spawnArgv.unshift(...extraNodeOptions);
 	}
 
-	return { env, argv };
+	return { env, argv: spawnArgv };
 }
