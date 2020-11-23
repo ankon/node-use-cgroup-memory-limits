@@ -9,7 +9,7 @@ export type GetMemoryLimits = () => number;
 
 /** @visibleForTesting */
 export interface OwnOptions {
-	cgroupMemoryFraction: number;
+	memoryFraction: number;
 }
 
 function readLimitValue(path: string, maxValue: number = -1): number {
@@ -77,7 +77,7 @@ function selectGetMemoryLimits(): GetMemoryLimits | undefined {
 /**
  * @param getMemoryLimits for testing
  */
-export function findExtraNodeOptions({ cgroupMemoryFraction }: OwnOptions, getMemoryLimits?: GetMemoryLimits): string[] {
+export function findExtraNodeOptions({ memoryFraction }: OwnOptions, getMemoryLimits?: GetMemoryLimits): string[] {
 	if (!getMemoryLimits) {
 		getMemoryLimits = selectGetMemoryLimits();
 	}
@@ -85,7 +85,7 @@ export function findExtraNodeOptions({ cgroupMemoryFraction }: OwnOptions, getMe
 	if (getMemoryLimits) {
 		const limitInBytes = getMemoryLimits();
 		if (limitInBytes > 0) {
-			const limitInMiB = Math.floor(limitInBytes / 1048576 * cgroupMemoryFraction);
+			const limitInMiB = Math.floor(limitInBytes / 1048576 * memoryFraction);
 			console.debug(`Applying cgroup memory limit: ${limitInMiB}MiB`);
 			return [`--max-old-space-size=${limitInMiB}`];
 		}
@@ -93,18 +93,18 @@ export function findExtraNodeOptions({ cgroupMemoryFraction }: OwnOptions, getMe
 	return [];
 }
 
-export function processOwnOptions(env: typeof process.env, argv: typeof process.argv, { cgroupMemoryFraction: defaultCgroupMemoryFraction }: OwnOptions = { cgroupMemoryFraction: 0.7 }): OwnOptions & { argv: typeof process.argv } {
+export function processOwnOptions(env: typeof process.env, argv: typeof process.argv, { memoryFraction: defaultMemoryFraction }: OwnOptions = { memoryFraction: 0.7 }): OwnOptions & { argv: typeof process.argv } {
 	let requireDashDash = false;
-	let cgroupMemoryFraction = Number(env.CGROUP_MEMORY_FRACTION) || defaultCgroupMemoryFraction;
+	let memoryFraction = Number(env.CGROUP_MEMORY_FRACTION) || defaultMemoryFraction;
 	let spawnArgvIndex = 0;
 	for (; spawnArgvIndex < argv.length; spawnArgvIndex++) {
 		if (argv[spawnArgvIndex] === '--cgroup-memory-fraction') {
 			requireDashDash = true;
-			cgroupMemoryFraction = Number(argv[++spawnArgvIndex]);
+			memoryFraction = Number(argv[++spawnArgvIndex]);
 			continue;
 		} else if (argv[spawnArgvIndex].startsWith('--cgroup-memory-fraction=')) {
 			requireDashDash = true;
-			cgroupMemoryFraction = Number(argv[spawnArgvIndex].substring('--cgroup-memory-fraction='.length));
+			memoryFraction = Number(argv[spawnArgvIndex].substring('--cgroup-memory-fraction='.length));
 			continue;
 		}
 
@@ -124,7 +124,7 @@ export function processOwnOptions(env: typeof process.env, argv: typeof process.
 	}
 
 	return {
-		cgroupMemoryFraction,
+		memoryFraction,
 		argv: argv.slice(spawnArgvIndex),
 	};
 }

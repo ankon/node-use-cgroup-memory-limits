@@ -25,7 +25,7 @@ describe('node-options', () => {
 					'/proc/self/cgroup': readFileSync(`${__dirname}/${fixture}/cgroup`, 'utf8'),
 					'/sys/fs/cgroup/memory/memory.limit_in_bytes': '314572800\n',
 				};
-				const extraOptions = runFindExtraNodeOptions(cgroupsFS, { cgroupMemoryFraction: 1 });
+				const extraOptions = runFindExtraNodeOptions(cgroupsFS, { memoryFraction: 1 });
 				expect(extraOptions).toEqual(['--max-old-space-size=300']);
 			});
 		});
@@ -38,13 +38,13 @@ describe('node-options', () => {
 					'/sys/fs/cgroup/memory.max': '314572800\n',
 					'/sys/fs/cgroup/memory.swap.max': '314572800\n',
 				};
-				const extraOptions = runFindExtraNodeOptions(cgroupsV2FS, { cgroupMemoryFraction: 1 });
+				const extraOptions = runFindExtraNodeOptions(cgroupsV2FS, { memoryFraction: 1 });
 				expect(extraOptions).toEqual(['--max-old-space-size=600']);
 			});
 		});
 
 		it('applies cgroup memory fraction', () => {
-			const extraOptions = runFindExtraNodeOptions({}, { cgroupMemoryFraction: 0.5 }, () => 600 * 1048576);
+			const extraOptions = runFindExtraNodeOptions({}, { memoryFraction: 0.5 }, () => 600 * 1048576);
 			expect(extraOptions).toEqual(['--max-old-space-size=300']);
 
 		});
@@ -82,13 +82,13 @@ describe('node-options', () => {
 		describe('cgroup memory fraction', () => {
 			it('returns default', () => {
 				const defaultValue = 0.7;
-				const { cgroupMemoryFraction } = processOwnOptions({}, [], { cgroupMemoryFraction: defaultValue });
-				expect(cgroupMemoryFraction).toEqual(defaultValue);
+				const { memoryFraction } = processOwnOptions({}, [], { memoryFraction: defaultValue });
+				expect(memoryFraction).toEqual(defaultValue);
 			});
 			it('returns value from CGROUP_MEMORY_FRACTION environment variable', () => {
 				const envValue = 0.8;
-				const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], { cgroupMemoryFraction: 0.7 });
-				expect(cgroupMemoryFraction).toEqual(envValue);
+				const { memoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], { memoryFraction: 0.7 });
+				expect(memoryFraction).toEqual(envValue);
 			});
 
 			const argvValue = 0.2;
@@ -96,8 +96,8 @@ describe('node-options', () => {
 				it(`parses fraction argument "${fractionArgv.join(' ')}"`, () => {
 					const otherArgv = ['alpha', 'beta', 'gamma'];
 					const argv = [...fractionArgv, '--', ...otherArgv];
-					const { cgroupMemoryFraction, argv: returnedArgv } = processOwnOptions({}, argv);
-					expect(cgroupMemoryFraction).toEqual(argvValue);
+					const { memoryFraction, argv: returnedArgv } = processOwnOptions({}, argv);
+					expect(memoryFraction).toEqual(argvValue);
 					expect(returnedArgv).toEqual(otherArgv);
 
 				});
@@ -108,8 +108,8 @@ describe('node-options', () => {
 				it(`uses fraction argument "${fractionArgv.join(' ')}" over environment variable`, () => {
 					const envValue = 0.8;
 					const argv = [...fractionArgv];
-					const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, { cgroupMemoryFraction: 0.7 });
-					expect(cgroupMemoryFraction).toEqual(argvValue);
+					const { memoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, { memoryFraction: 0.7 });
+					expect(memoryFraction).toEqual(argvValue);
 				});
 			});
 		});
