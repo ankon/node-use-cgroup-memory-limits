@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 
 import { procfs } from '@stroncium/procfs';
 
-import { isMaxOldSpaceSizeOption } from './utils';
+import { isExplicitMemorySizeOption } from './utils';
 
 /** @visibleForTesting */
 export type GetMemoryLimits = () => number;
@@ -136,9 +136,9 @@ export function getSpawnOptions(env: typeof process.env, argv: typeof process.ar
 	const nodeOptions = env.NODE_OPTIONS ?? '';
 	const hasExplicitMemoryLimitInNodeOptions = nodeOptions
 		.split(/\s/)
-		.some(isMaxOldSpaceSizeOption);
+		.some(isExplicitMemorySizeOption);
 	const hasExplicitMemoryLimitInArgv = spawnArgv
-		.some(isMaxOldSpaceSizeOption);
+		.some(isExplicitMemorySizeOption);
 	if (!hasExplicitMemoryLimitInNodeOptions && !hasExplicitMemoryLimitInArgv) {
 		const extraNodeOptions = getExtraNodeOptions(cgroupMemoryFraction);
 		// Put the arguments in the front, as the end will usually be options for whatever is running

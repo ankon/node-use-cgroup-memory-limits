@@ -51,15 +51,16 @@ describe('node-options', () => {
 	});
 
 	describe('getSpawnOptions', () => {
-		it('ignores extra options when --max-old-space-size exists in argv', () => {
-			const { argv } = getSpawnOptions({}, ['--max-old-space-size=400'], () => ['EXTRA']);
-			expect(argv).not.toContain('EXTRA');
+		['--max-old-space-size', '--max-semi-space-size', '--max-heap-size'].forEach(option => {
+			it(`ignores extra options when ${option} exists in argv`, () => {
+				const { argv } = getSpawnOptions({}, [`${option}=400`], () => ['EXTRA']);
+				expect(argv).not.toContain('EXTRA');
+			});
+			it(`ignores extra options when ${option} exists in env.NODE_OPTIONS`, () => {
+				const { argv } = getSpawnOptions({ NODE_OPTIONS: `${option}=400` }, [], () => ['EXTRA']);
+				expect(argv).not.toContain('EXTRA');
+			});
 		});
-		it('ignores extra options when --max-old-space-size exists in env.NODE_OPTIONS', () => {
-			const { argv } = getSpawnOptions({ NODE_OPTIONS: '--max-old-space-size=400' }, [], () => ['EXTRA']);
-			expect(argv).not.toContain('EXTRA');
-		});
-
 		it('prepends extra options to argv', () => {
 			const { argv } = getSpawnOptions({}, ['existing'], () => ['EXTRA']);
 			expect(argv).toEqual(['EXTRA', 'existing']);

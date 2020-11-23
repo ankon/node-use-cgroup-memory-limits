@@ -1,12 +1,15 @@
-import { isMaxOldSpaceSizeOption } from "../src/utils";
+import { isExplicitMemorySizeOption } from '../src/utils';
 
 describe('utils', () => {
-	describe('isMaxOldSpaceSizeOption', () => {
-		it.each(['--max-old-space-size', '--max-old-space-size=400'])('%s: yes', option => {
-			expect(isMaxOldSpaceSizeOption(option)).toEqual(true);
-		});
-		it.each(['--max-old-space-size-something-unknown', '--max-old-space-size-something-unknown=400'])('%s: no', option => {
-			expect(isMaxOldSpaceSizeOption(option)).toEqual(true);
+	describe('isExplicitMemorySizeOption', () => {
+		['old-space', 'semi-space', 'heap'].forEach(memoryRegion => {
+			it.each([`--max-${memoryRegion}-size`, `--max-${memoryRegion}-size=400`])('%s: yes', option => {
+				expect(isExplicitMemorySizeOption(option)).toEqual(true);
+			});
+			it.each([`--max-${memoryRegion}-size-something-unknown`, `--max-${memoryRegion}-size-something-unknown=400`])('%s: no', option => {
+				expect(isExplicitMemorySizeOption(option)).toEqual(true);
+			});
+
 		});
 	});
 });

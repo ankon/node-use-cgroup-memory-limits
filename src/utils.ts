@@ -1,4 +1,4 @@
 
-export function isMaxOldSpaceSizeOption(option: string) {
-	return /^--max-old-space-size(=\d+)?/.test(option);
+export function isExplicitMemorySizeOption(option: string) {
+	return /^--max-(old-space|semi-space|heap)-size(=\d+)?/.test(option);
 }
