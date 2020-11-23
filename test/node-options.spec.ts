@@ -1,7 +1,7 @@
 import { patchRequire } from 'fs-monkey';
 import { DirectoryJSON, vol } from 'memfs';
 
-import { findExtraNodeOptions, getCgroupMemoryFraction, GetMemoryLimits, getSpawnOptions } from '../src/node-options';
+import { findExtraNodeOptions, processOwnOptions, GetMemoryLimits, getSpawnOptions } from '../src/node-options';
 
 // Mock 'fs', EXCEPT for require() calls.
 jest.mock('fs', () => require('memfs').fs);
@@ -67,47 +67,50 @@ describe('node-options', () => {
 		});
 	});
 
-	describe('getCgroupMemoryFraction', () => {
-		it('returns default', () => {
-			const defaultValue = 0.7;
-			const { cgroupMemoryFraction } = getCgroupMemoryFraction({}, [], defaultValue);
-			expect(cgroupMemoryFraction).toEqual(defaultValue);
-		});
+	describe('processOwnOptions', () => {
 		it('returns argv unmodified if not found', () => {
 			const argv = ['alpha', 'beta', 'gamma'];
-			const { argv: returnedArgv } = getCgroupMemoryFraction({}, argv);
+			const { argv: returnedArgv } = processOwnOptions({}, argv);
 			expect(returnedArgv).toEqual(argv);
-		});
-		it('returns value from CGROUP_MEMORY_FRACTION environment variable', () => {
-			const envValue = 0.8;
-			const { cgroupMemoryFraction } = getCgroupMemoryFraction({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], 0.7);
-			expect(cgroupMemoryFraction).toEqual(envValue);
 		});
 		it('removes leading "--" from argv', () => {
 			const argv = ['--', 'alpha', 'beta', 'gamma'];
-			const { argv: returnedArgv } = getCgroupMemoryFraction({}, argv);
+			const { argv: returnedArgv } = processOwnOptions({}, argv);
 			expect(returnedArgv).toEqual(argv.slice(1));
 		});
 
-		const argvValue = 0.2;
-		[['--cgroup-memory-fraction', `${argvValue}`], [`--cgroup-memory-fraction=${argvValue}`]].forEach(fractionArgv => {
-			it(`parses fraction argument "${fractionArgv.join(' ')}"`, () => {
-				const otherArgv = ['alpha', 'beta', 'gamma'];
-				const argv = [...fractionArgv, '--', ...otherArgv];
-				const { cgroupMemoryFraction, argv: returnedArgv } = getCgroupMemoryFraction({}, argv);
-				expect(cgroupMemoryFraction).toEqual(argvValue);
-				expect(returnedArgv).toEqual(otherArgv);
-
+		describe('cgroup memory fraction', () => {
+			it('returns default', () => {
+				const defaultValue = 0.7;
+				const { cgroupMemoryFraction } = processOwnOptions({}, [], defaultValue);
+				expect(cgroupMemoryFraction).toEqual(defaultValue);
 			});
-			it(`throws error for unexpected argument after fraction argument "${fractionArgv.join(' ')}"`, () => {
-				const argv = [...fractionArgv, 'unexpected thing'];
-				expect(() => getCgroupMemoryFraction({}, argv)).toThrowError();
-			});
-			it(`uses fraction argument "${fractionArgv.join(' ')}" over environment variable`, () => {
+			it('returns value from CGROUP_MEMORY_FRACTION environment variable', () => {
 				const envValue = 0.8;
-				const argv = [...fractionArgv];
-				const { cgroupMemoryFraction } = getCgroupMemoryFraction({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, 0.7);
-				expect(cgroupMemoryFraction).toEqual(argvValue);
+				const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], 0.7);
+				expect(cgroupMemoryFraction).toEqual(envValue);
+			});
+
+			const argvValue = 0.2;
+			[['--cgroup-memory-fraction', `${argvValue}`], [`--cgroup-memory-fraction=${argvValue}`]].forEach(fractionArgv => {
+				it(`parses fraction argument "${fractionArgv.join(' ')}"`, () => {
+					const otherArgv = ['alpha', 'beta', 'gamma'];
+					const argv = [...fractionArgv, '--', ...otherArgv];
+					const { cgroupMemoryFraction, argv: returnedArgv } = processOwnOptions({}, argv);
+					expect(cgroupMemoryFraction).toEqual(argvValue);
+					expect(returnedArgv).toEqual(otherArgv);
+
+				});
+				it(`throws error for unexpected argument after fraction argument "${fractionArgv.join(' ')}"`, () => {
+					const argv = [...fractionArgv, 'unexpected thing'];
+					expect(() => processOwnOptions({}, argv)).toThrowError();
+				});
+				it(`uses fraction argument "${fractionArgv.join(' ')}" over environment variable`, () => {
+					const envValue = 0.8;
+					const argv = [...fractionArgv];
+					const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, 0.7);
+					expect(cgroupMemoryFraction).toEqual(argvValue);
+				});
 			});
 		});
 	});

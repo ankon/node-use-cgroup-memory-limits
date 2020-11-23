@@ -88,7 +88,7 @@ export function findExtraNodeOptions(cgroupMemoryFraction: number, getMemoryLimi
 	return [];
 }
 
-export function getCgroupMemoryFraction(env: typeof process.env, argv: typeof process.argv, defaultCgroupMemoryFraction: number = 0.7): { cgroupMemoryFraction: number, argv: typeof process.argv } {
+export function processOwnOptions(env: typeof process.env, argv: typeof process.argv, defaultCgroupMemoryFraction: number = 0.7): { cgroupMemoryFraction: number, argv: typeof process.argv } {
 	let requireDashDash = false;
 	let cgroupMemoryFraction = Number(env.CGROUP_MEMORY_FRACTION) || defaultCgroupMemoryFraction;
 	let spawnArgvIndex = 0;
@@ -132,7 +132,7 @@ export function getCgroupMemoryFraction(env: typeof process.env, argv: typeof pr
  * @param getExtraNodeOptions For testing: function get extra node options
  */
 export function getSpawnOptions(env: typeof process.env, argv: typeof process.argv, getExtraNodeOptions = findExtraNodeOptions): { env: typeof process.env, argv: typeof process.argv } {
-	const { cgroupMemoryFraction, argv: spawnArgv } = getCgroupMemoryFraction(env, argv);
+	const { cgroupMemoryFraction, argv: spawnArgv } = processOwnOptions(env, argv);
 	const nodeOptions = env.NODE_OPTIONS ?? '';
 	const hasExplicitMemoryLimitInNodeOptions = nodeOptions
 		.split(/\s/)
