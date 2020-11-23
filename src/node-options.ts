@@ -17,8 +17,8 @@ export interface OwnOptions {
 
 /** @visibleForTesting */
 export const DEFAULT_OPTIONS: OwnOptions = {
-	memoryFraction: 0.7,
-	memoryRegion: 'old-space',
+	memoryFraction: 0.8,
+	memoryRegion: 'heap',
 };
 
 function readLimitValue(path: string, maxValue: number = -1): number {
