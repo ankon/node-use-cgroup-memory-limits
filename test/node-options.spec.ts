@@ -1,7 +1,7 @@
 import { patchRequire } from 'fs-monkey';
 import { DirectoryJSON, vol } from 'memfs';
 
-import { findExtraNodeOptions, processOwnOptions, GetMemoryLimits, getSpawnOptions } from '../src/node-options';
+import { findExtraNodeOptions, processOwnOptions, GetMemoryLimits, getSpawnOptions, OwnOptions } from '../src/node-options';
 
 // Mock 'fs', EXCEPT for require() calls.
 jest.mock('fs', () => require('memfs').fs);
@@ -10,10 +10,10 @@ patchRequire(fs);
 
 const { readFileSync } = fs;
 
-function runFindExtraNodeOptions(contents: DirectoryJSON, cgroupMemoryFraction: number, getMemoryLimits?: GetMemoryLimits) {
+function runFindExtraNodeOptions(contents: DirectoryJSON, defaultOptions: OwnOptions, getMemoryLimits?: GetMemoryLimits) {
 	// Configure the mocked file system
 	vol.fromJSON(contents, '/');
-	return findExtraNodeOptions(cgroupMemoryFraction, getMemoryLimits);
+	return findExtraNodeOptions(defaultOptions, getMemoryLimits);
 }
 
 describe('node-options', () => {
@@ -25,7 +25,7 @@ describe('node-options', () => {
 					'/proc/self/cgroup': readFileSync(`${__dirname}/${fixture}/cgroup`, 'utf8'),
 					'/sys/fs/cgroup/memory/memory.limit_in_bytes': '314572800\n',
 				};
-				const extraOptions = runFindExtraNodeOptions(cgroupsFS, 1);
+				const extraOptions = runFindExtraNodeOptions(cgroupsFS, { cgroupMemoryFraction: 1 });
 				expect(extraOptions).toEqual(['--max-old-space-size=300']);
 			});
 		});
@@ -38,13 +38,13 @@ describe('node-options', () => {
 					'/sys/fs/cgroup/memory.max': '314572800\n',
 					'/sys/fs/cgroup/memory.swap.max': '314572800\n',
 				};
-				const extraOptions = runFindExtraNodeOptions(cgroupsV2FS, 1);
+				const extraOptions = runFindExtraNodeOptions(cgroupsV2FS, { cgroupMemoryFraction: 1 });
 				expect(extraOptions).toEqual(['--max-old-space-size=600']);
 			});
 		});
 
 		it('applies cgroup memory fraction', () => {
-			const extraOptions = runFindExtraNodeOptions({}, 0.5, () => 600 * 1048576);
+			const extraOptions = runFindExtraNodeOptions({}, { cgroupMemoryFraction: 0.5 }, () => 600 * 1048576);
 			expect(extraOptions).toEqual(['--max-old-space-size=300']);
 
 		});
@@ -82,12 +82,12 @@ describe('node-options', () => {
 		describe('cgroup memory fraction', () => {
 			it('returns default', () => {
 				const defaultValue = 0.7;
-				const { cgroupMemoryFraction } = processOwnOptions({}, [], defaultValue);
+				const { cgroupMemoryFraction } = processOwnOptions({}, [], { cgroupMemoryFraction: defaultValue });
 				expect(cgroupMemoryFraction).toEqual(defaultValue);
 			});
 			it('returns value from CGROUP_MEMORY_FRACTION environment variable', () => {
 				const envValue = 0.8;
-				const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], 0.7);
+				const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}`}, [], { cgroupMemoryFraction: 0.7 });
 				expect(cgroupMemoryFraction).toEqual(envValue);
 			});
 
@@ -108,7 +108,7 @@ describe('node-options', () => {
 				it(`uses fraction argument "${fractionArgv.join(' ')}" over environment variable`, () => {
 					const envValue = 0.8;
 					const argv = [...fractionArgv];
-					const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, 0.7);
+					const { cgroupMemoryFraction } = processOwnOptions({ CGROUP_MEMORY_FRACTION: `${envValue}` }, argv, { cgroupMemoryFraction: 0.7 });
 					expect(cgroupMemoryFraction).toEqual(argvValue);
 				});
 			});

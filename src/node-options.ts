@@ -7,6 +7,11 @@ import { isExplicitMemorySizeOption } from './utils';
 /** @visibleForTesting */
 export type GetMemoryLimits = () => number;
 
+/** @visibleForTesting */
+export interface OwnOptions {
+	cgroupMemoryFraction: number;
+}
+
 function readLimitValue(path: string, maxValue: number = -1): number {
 	try {
 		const memoryLimitString = readFileSync(path, 'utf8').trim();
@@ -72,7 +77,7 @@ function selectGetMemoryLimits(): GetMemoryLimits | undefined {
 /**
  * @param getMemoryLimits for testing
  */
-export function findExtraNodeOptions(cgroupMemoryFraction: number, getMemoryLimits?: GetMemoryLimits): string[] {
+export function findExtraNodeOptions({ cgroupMemoryFraction }: OwnOptions, getMemoryLimits?: GetMemoryLimits): string[] {
 	if (!getMemoryLimits) {
 		getMemoryLimits = selectGetMemoryLimits();
 	}
@@ -88,7 +93,7 @@ export function findExtraNodeOptions(cgroupMemoryFraction: number, getMemoryLimi
 	return [];
 }
 
-export function processOwnOptions(env: typeof process.env, argv: typeof process.argv, defaultCgroupMemoryFraction: number = 0.7): { cgroupMemoryFraction: number, argv: typeof process.argv } {
+export function processOwnOptions(env: typeof process.env, argv: typeof process.argv, { cgroupMemoryFraction: defaultCgroupMemoryFraction }: OwnOptions = { cgroupMemoryFraction: 0.7 }): OwnOptions & { argv: typeof process.argv } {
 	let requireDashDash = false;
 	let cgroupMemoryFraction = Number(env.CGROUP_MEMORY_FRACTION) || defaultCgroupMemoryFraction;
 	let spawnArgvIndex = 0;
@@ -132,7 +137,7 @@ export function processOwnOptions(env: typeof process.env, argv: typeof process.
  * @param getExtraNodeOptions For testing: function get extra node options
  */
 export function getSpawnOptions(env: typeof process.env, argv: typeof process.argv, getExtraNodeOptions = findExtraNodeOptions): { env: typeof process.env, argv: typeof process.argv } {
-	const { cgroupMemoryFraction, argv: spawnArgv } = processOwnOptions(env, argv);
+	const { argv: spawnArgv, ...ownOptions } = processOwnOptions(env, argv);
 	const nodeOptions = env.NODE_OPTIONS ?? '';
 	const hasExplicitMemoryLimitInNodeOptions = nodeOptions
 		.split(/\s/)
@@ -140,7 +145,7 @@ export function getSpawnOptions(env: typeof process.env, argv: typeof process.ar
 	const hasExplicitMemoryLimitInArgv = spawnArgv
 		.some(isExplicitMemorySizeOption);
 	if (!hasExplicitMemoryLimitInNodeOptions && !hasExplicitMemoryLimitInArgv) {
-		const extraNodeOptions = getExtraNodeOptions(cgroupMemoryFraction);
+		const extraNodeOptions = getExtraNodeOptions(ownOptions);
 		// Put the arguments in the front, as the end will usually be options for whatever is running
 		// inside node.
 		spawnArgv.unshift(...extraNodeOptions);
