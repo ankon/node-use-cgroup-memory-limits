@@ -51,7 +51,10 @@ describe('node-options', () => {
 	});
 
 	describe('getSpawnOptions', () => {
-		['--max-old-space-size', '--max-semi-space-size', '--max-heap-size'].forEach(option => {
+		['max-old-space-size', 'max-semi-space-size', 'max-heap-size']
+			.reduce((options, name) => ([...options, `--${name}`, `--${name.replace(/-/g, '_')}`]), [] as string[])
+			.forEach(option => {
+
 			it(`ignores extra options when ${option} exists in argv`, () => {
 				const { argv } = getSpawnOptions({}, [`${option}=400`], () => ['EXTRA']);
 				expect(argv).not.toContain('EXTRA');
