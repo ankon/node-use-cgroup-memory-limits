@@ -7,7 +7,7 @@ describe('utils', () => {
 				expect(isExplicitMemorySizeOption(option)).toEqual(true);
 			});
 			it.each([`--max-${memoryRegion}-size-something-unknown`, `--max-${memoryRegion}-size-something-unknown=400`])('%s: no', option => {
-				expect(isExplicitMemorySizeOption(option)).toEqual(true);
+				expect(isExplicitMemorySizeOption(option)).toEqual(false);
 			});
 
 		});
