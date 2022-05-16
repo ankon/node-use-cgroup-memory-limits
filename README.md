@@ -1,4 +1,4 @@
-# @collaborne/use-cgroup-memory-limits
+# @ankon/use-cgroup-memory-limits
 
 A small wrapper around NodeJS that looks at the Cgroups memory settings, and sets the `--max-old-space-size` command-line argument in `NODE_OPTIONS` when it is not yet set.
 
@@ -7,7 +7,7 @@ A small wrapper around NodeJS that looks at the Cgroups memory settings, and set
 1. Install as a runtime dependency
 
    ```sh
-   npm install @collaborne/use-group-memory-limits
+   npm install @ankon/use-group-memory-limits
    ```
 
 2. Use `use-cgroup-memory-limits` instead of `node` in your start scripts
@@ -29,6 +29,7 @@ A small wrapper around NodeJS that looks at the Cgroups memory settings, and set
 ```LICENSE
 This software is licensed under the Apache 2 license, quoted below.
 
+Copyright 2022 Andreas Kohn <andreas.kohn@gmail.com>
 Copyright 2020 Collaborne B.V. <http://github.com/Collaborne/>
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not

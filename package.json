@@ -1,5 +1,5 @@
 {
-  "name": "@collaborne/use-cgroup-memory-limits",
+  "name": "@ankon/use-cgroup-memory-limits",
   "version": "0.3.0",
   "description": "Wrapper to apply cgroup memory limits to a Node process",
   "scripts": {
