@@ -1,4 +1,4 @@
-# @collaborne/use-cgroup-memory-limits [![Build Status](https://travis-ci.com/Collaborne/node-use-cgroup-memory-limits.svg?branch=main)](https://travis-ci.com/Collaborne/node-use-cgroup-memory-limits)
+# @collaborne/use-cgroup-memory-limits
 
 A small wrapper around NodeJS that looks at the Cgroups memory settings, and sets the `--max-old-space-size` command-line argument in `NODE_OPTIONS` when it is not yet set.
 
