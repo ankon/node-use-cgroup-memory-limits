@@ -1,6 +1,6 @@
 {
   "name": "@ankon/use-cgroup-memory-limits",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Wrapper to apply cgroup memory limits to a Node process",
   "scripts": {
     "build": "tsc -p tsconfig.dist.json",
